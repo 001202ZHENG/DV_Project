@@ -6,11 +6,12 @@ import panel as pn
 import pandas as pd
 
 
-# 定义页面功能
+
+
+# Define page functionality
 def page1():
-    # 确保 'insurance.csv' 文件在当前目录中
     df = pd.read_csv('../insurance.csv')
-    # 初始化session state变量
+    # Initialize session state variables
     if 'page_number' not in st.session_state:
         st.session_state['page_number'] = 1
     if 'entries_per_page' not in st.session_state:
@@ -47,12 +48,12 @@ def page1():
     ### Filter & Visualization:
     """
 
-    # 设置页面标题
+    # Set the page title
     st.title('Insurance Data  Dashboard')
 
 
     st.markdown(intro_text)
-    # 添加交互组件以筛选数据
+    # Add interactive components to filter data
     age = st.slider('Age', min_value=int(df['age'].min()), max_value=int(df['age'].max()), value=(int(df['age'].min()), int(df['age'].max())))
     bmi = st.slider('BMI', min_value=float(df['bmi'].min()), max_value=float(df['bmi'].max()), value=(float(df['bmi'].min()), float(df['bmi'].max())))
     children = st.slider('Children', min_value=int(df['children'].min()), max_value=int(df['children'].max()), value=(int(df['children'].min()), int(df['children'].max())))
@@ -73,7 +74,7 @@ def page1():
     else:
         df = df.sort_values(by=sort_by, ascending=False)
 
-    # 根据用户输入筛选数据
+    # Filter data based on user input
     filtered_df = df[(df['age'].between(*age)) & 
                     (df['sex'].isin(sex)) & 
                     (df['bmi'].between(*bmi)) & 
@@ -81,17 +82,17 @@ def page1():
                     (df['smoker'].isin(smoker)) & 
                     (df['region'].isin(region))]
 
-    # 添加选择每页显示条目数的选项，并更新 session state
+    # Add a selection option for the number of entries per page and update the session state
     entries_option = st.selectbox('Show entries:', [10, 25, 50], index=0)
     if entries_option != st.session_state.entries_per_page:
         st.session_state.entries_per_page = entries_option
         st.session_state.page_number = 1
 
-    # 计算总页数
+    # Calculate total number of pages
     total_pages = len(filtered_df) // st.session_state.entries_per_page + (len(filtered_df) % st.session_state.entries_per_page > 0)
 
 
-    # 分页控制器
+    # Pagination controls
     prev, _ ,next = st.columns([1, 1, 1])
 
     with prev:
@@ -107,130 +108,30 @@ def page1():
             st.experimental_rerun()
 
 
-    # 计算开始和结束索引
+    # Calculate start and end index
     start_index = (st.session_state.page_number - 1) * st.session_state.entries_per_page
     end_index = start_index + st.session_state.entries_per_page
 
-    # 显示当前页面的数据
+    # Display the data for the current page
     st.dataframe(filtered_df.iloc[start_index:end_index])
 
-    # 显示当前页码和总页数
+    # Display the current page number and total pages
     st.text(f"Showing page {st.session_state.page_number} of {total_pages}")
     
 
+
 def page2():
-    # 加载数据
-    dat = pd.read_csv('../insurance.csv')
-    
-    # 设置页面标题
-    st.title('Interactive Analysis of Health Insurance Costs Based on BMI, Smoking Status and Demographics')
-
-    # 创建选择器，用于鼠标悬停时选择最近的点
-    nearest = alt.selection(type='single', nearest=True, on='mouseover',
-                            fields=['bmi'], empty='none')
-    # 定义图表的共享宽度和高度
-    chart_width = 600
-    chart_height = 300
-
-    # UI 控件用于筛选数据，放在页面中而不是侧边栏
-    smoker_filter = st.multiselect(
-        'Select Smoker Status:', options=dat['smoker'].unique(), default=dat['smoker'].unique()
-    )
-    sex_filter = st.multiselect(
-        'Select Sex:', options=dat['sex'].unique(), default=dat['sex'].unique()
-    )
-    region_filter = st.multiselect(
-        'Select Region:', options=dat['region'].unique(), default=dat['region'].unique()
-    )
-
-    # 根据筛选器更新数据
-    filtered_data = dat[
-        dat['smoker'].isin(smoker_filter) & 
-        dat['sex'].isin(sex_filter) & 
-        dat['region'].isin(region_filter)
-    ]
-    # Step 1: Create an interval selection for both charts to use
-    interval = alt.selection_interval(encodings=['x'])
-    
-    # 基本线图，并设置颜色
-    line = alt.Chart(filtered_data).mark_line(interpolate='basis', color='orange').encode(
-        x='bmi',
-        y='charges',
-        color=alt.value('#c0a9bd')  # 设置为橙色
-    )
-    # 透明选择器图表
-    selectors = alt.Chart(filtered_data).mark_point().encode(
-        x='bmi',
-        opacity=alt.value(0),
-    ).add_selection(
-        nearest
-    )
-
-    # 线图上的点，基于选择器高亮
-    points = line.mark_point(color='#6c757d').encode(
-        opacity=alt.condition(nearest, alt.value(1), alt.value(0)),
-        color=alt.value('#a4d8d6')  # 浅绿色
-    )
-
-    # 线图上的文本标签，基于选择器高亮
-    text = line.mark_text(align='left', dx=5, dy=-5).encode(
-        text=alt.condition(nearest, 'charges', alt.value(' ')),
-        color=alt.value('#ffbb98')  # 橙色
-    )
-
-    # 根据选择器位置绘制规则线
-    rules = alt.Chart(filtered_data).mark_rule(color='gray').encode(
-        x='bmi',
-    ).transform_filter(nearest)
-
-    # 组合所有图层成为线图，并设置宽度和高度
-    line_chart = alt.layer(
-        line, selectors, points, rules, text
-    ).properties(
-        width=chart_width, 
-        height=chart_height,
-        title='BMI vs. Charges by Smoker Status'
-    )
-
-    # 交互式散点图，根据年龄来调整大小
-    scatter_plot = alt.Chart(filtered_data).mark_point().encode(
-        x=alt.X('bmi', scale=alt.Scale(zero=False)),
-        y=alt.Y('charges', scale=alt.Scale(zero=False)),
-        color=alt.Color('smoker:N', legend=alt.Legend(title='Smoker'),
-                        scale=alt.Scale(domain=['no', 'yes'], range=['navy', 'orange'])),
-    size=alt.Size('age:Q', bin=alt.Bin(maxbins=3), legend=alt.Legend(title='Age')),  # 使用 maxbins 参数减少年龄区间数量
-        tooltip=['bmi', 'charges', 'smoker', 'age']
-    ).properties(
-        width=chart_width, 
-        height=chart_height,
-        title='Scatter Plot of Charges vs. BMI'
-    ).interactive()
-
-    # 使用 & 操作符垂直连接图表
-    combined_chart = (line_chart & scatter_plot).resolve_scale(color='independent')
-
-    # 在 Streamlit 中显示图表
-    st.altair_chart(combined_chart, use_container_width=True)
-    st.write("This is page 2.")
-
-
-
-
-
-def page3():
-    # page3 相关的代码
-    # 加载数据
-# 加载数据
+    # Load data
     dat = pd.read_csv('../insurance.csv')
 
-    # 创建选择器，用于在图表上选择间隔
+    # Create selector for selecting intervals on charts
     interval = alt.selection_interval()
 
-    # 定义图表的共享宽度和高度
+    # Define shared width and height for charts
     chart_width = 600
     chart_height = 300
 
-    # UI 控件用于筛选数据，放在页面中而不是侧边栏
+    # UI controls for filtering data, placed on the page instead of the sidebar
     smoker_filter = st.multiselect(
         'Select Smoker Status:', options=dat['smoker'].unique(), default=dat['smoker'].unique()
     )
@@ -241,14 +142,14 @@ def page3():
         'Select Region:', options=dat['region'].unique(), default=dat['region'].unique()
     )
 
-    # 根据筛选器更新数据
+    # Update data based on filters
     filtered_data = dat[
         dat['smoker'].isin(smoker_filter) & 
         dat['sex'].isin(sex_filter) & 
         dat['region'].isin(region_filter)
     ]
 
-    # 组合所有图层成为线图，并设置颜色，添加选择器
+    # Combine all layers into line chart, set color, and add selector
     line_chart = alt.Chart(filtered_data).mark_line(interpolate='basis').encode(
         x='bmi',
         y='charges',
@@ -261,7 +162,7 @@ def page3():
         interval  # Add our interval selection to the chart
     )
 
-    # 交互式散点图，根据年龄来调整大小，添加选择器
+    # Interactive scatter plot, adjusting size based on age, and add selector
     scatter_plot = alt.Chart(filtered_data).mark_point().encode(
         x='bmi',
         y='charges',
@@ -275,21 +176,18 @@ def page3():
         interval  # Use the same selection for this chart
     ).interactive()
 
-    # 使用 & 操作符垂直连接图表
+    # Vertically concatenate charts using & operator
     combined_chart = alt.vconcat(line_chart, scatter_plot).resolve_scale(color='independent')
 
-    # 在 Streamlit 中显示图表
+    # Display charts in Streamlit
     st.altair_chart(combined_chart, use_container_width=True)
-    st.write("This is page 3.")
+    st.write("This is page 2.")
+    st.write("The graphs illustrate the relationship between Body Mass Index (BMI) and healthcare charges, differentiated by smoking status. It clearly indicates that smokers, across all BMIs, typically incur higher healthcare costs than their non-smoking counterparts. Notably, for individuals with a BMI over 30, the charges for smokers can be up to two to three times higher than for non-smokers with an equivalent BMI. Beyond a BMI of 40, the trend shows that charges for non-smokers tend to decrease, whereas costs for smokers display some variability.")
 
-
-
-
-
-def page4():
-    # 加载数据
+def page3():
+    # Load data
     data = pd.read_csv('../insurance.csv')
-    # 定义一个下拉选择器，用于地区筛选
+    # Define a dropdown selector for region filtering
     region_selection = alt.selection_single(name='RegionSelection', fields=['region'], bind='legend')
 
     # Average charges by region - Bar Chart
@@ -306,7 +204,7 @@ def page4():
     region_selection2 = alt.selection_single(fields=['region'], bind=region_dropdown, empty='all')
 
     smoker_selection = alt.selection_single(name='SmokerSelection', fields=['smoker'], bind='legend')
-    # 更新散点图，包括地区筛选功能
+    # Update scatter plot, including region filtering functionality
     scatter_plot_with_filters = alt.Chart(data).mark_point().encode(
         x='age:Q',
         y='charges:Q',
@@ -317,7 +215,7 @@ def page4():
         smoker_selection,
         region_selection2
     )
-    # 创建组合图表时，确保颜色比例和图例是独立的
+    # When creating combined charts, ensure color scale and legend are independent
     combined_chart = alt.vconcat(
         (bar_chart | scatter_plot_with_filters).resolve_scale(color='independent')
     ).resolve_legend(
@@ -328,18 +226,17 @@ def page4():
     st.altair_chart(combined_chart.interactive(), use_container_width=True)
 
 
-    st.write("This is page 4.")
+    st.write("This is page 3.")
+    st.write("The analysis of medical charges across all regions reveals a consistent range of 12000 to 15000, with the Southeast region standing out for its highest average charges. Moreover, examining age versus charges illustrates a predictable trend: as age increases, so do medical expenses. This relationship is further underscored by a significant divergence between smokers and non-smokers, with smokers facing markedly higher charges, often 4 to 5 times that of non-smokers. Intriguingly, the minimum charges for smokers can match or surpass the highest charges among non-smokers. Notably, in the Southeast region, these higher charges are predominantly attributed to smokers, contributing to its status of having the highest average charges among all regions.")
 
-
-
-def page5():
-    # 加载数据
+def page4():
+    # Load data
     data = pd.read_csv('../insurance.csv')
 
-    # 创建一个间隔选择器
+    # Create an interval selector
     interval = alt.selection_interval()
 
-    # 定义一个基本的散点图，设置透明度和颜色条件
+    # Define a basic scatter plot, setting opacity and color conditions
     base = alt.Chart(data).mark_circle().encode(
         opacity=alt.condition(interval, alt.value(1), alt.value(0.2)),
         color=alt.condition(interval, 'region:N', alt.value('lightgray'))
@@ -350,49 +247,35 @@ def page5():
         interval
     )
 
-    # 左图：按年龄划分的费用
+    # Left chart: Charges divided by age
     charges_age_chart = base.encode(
         x='age:Q',
         y='charges:Q',
         tooltip=['age', 'charges', 'region']
     )
 
-    # 右图：BMI与子女数量的关系
+    # Right chart: Relationship between BMI and number of children
     children_bmi_chart = base.encode(
         x='bmi:Q',
         y='children:Q',
         tooltip=['bmi', 'children', 'region']
     )
 
-    # 水平排列图表
+    # Horizontally arrange charts
     combined_charts = alt.hconcat(charges_age_chart, children_bmi_chart)
 
-    # 使用 Streamlit 显示图表
+    # Display charts using Streamlit
     st.altair_chart(combined_charts, use_container_width=True)
 
-    st.write("This is page 5.")
+    st.write("This is page 4.")
+    st.write("Notably, healthcare charges are relatively low for the younger population but begin to rise more steeply past a certain age, suggesting higher medical costs as people grow older. Conversely, when examining the number of children in relation to Body Mass Index (BMI), there is no discernible trend, which suggests that the number of children is independent of BMI and is uniformly distributed across the different regions.")
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# 侧边栏选项
+# Sidebar options
 st.sidebar.title('Navigation')
-options = ["General Information", "Charges Comparison", "Charges Selection", "Region Insights",'Age Difference']
+options = ["General Information", "Charges Selection", "Region Insights", 'Age Difference']
 choice = st.sidebar.radio("Choose a page:", options)
 
-# 在这里添加组名和小组成员信息
+# Add group name and team members' information here
 st.sidebar.markdown('') 
 st.sidebar.markdown('') 
 st.sidebar.markdown('') 
@@ -402,7 +285,7 @@ st.sidebar.markdown('')
 st.sidebar.markdown('') 
 st.sidebar.markdown('') 
 st.sidebar.markdown('') 
-st.sidebar.markdown('---') # 添加一条分割线
+st.sidebar.markdown('---') # Add a horizontal line
 
 st.sidebar.markdown('### Team VisPro')
 st.sidebar.markdown("""
@@ -411,17 +294,12 @@ st.sidebar.markdown("""
 - Nhu Pham
 """)
 
-# 根据侧边栏的选择显示对应的页面内容
+# Display corresponding page content based on sidebar selection
 if choice == "General Information":
     page1()
-elif choice == "Charges Comparison":
-    page2()
 elif choice == "Charges Selection":
-    page3()
+    page2()
 elif choice == "Region Insights":
-    page4()
+    page3()
 elif choice == "Age Difference":
-    page5()
-
-
-
+    page4()
