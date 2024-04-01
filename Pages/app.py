@@ -181,8 +181,8 @@ def page2():
 
     # Display charts in Streamlit
     st.altair_chart(combined_chart, use_container_width=True)
-    st.write("This is page 2.")
-    st.write("The graphs illustrate the relationship between Body Mass Index (BMI) and healthcare charges, differentiated by smoking status. It clearly indicates that smokers, across all BMIs, typically incur higher healthcare costs than their non-smoking counterparts. Notably, for individuals with a BMI over 30, the charges for smokers can be up to two to three times higher than for non-smokers with an equivalent BMI. Beyond a BMI of 40, the trend shows that charges for non-smokers tend to decrease, whereas costs for smokers display some variability.")
+
+    st.write("The graphs illustrate the relationship between Body Mass Index (BMI) and healthcare charges, differentiated by smoking status.\n\nIt clearly indicates that smokers, across all BMIs, typically incur higher healthcare costs than their non-smoking counterparts.\n\nNotably, for individuals with a BMI over 30, the charges for smokers can be up to two to three times higher than for non-smokers with an equivalent BMI.\n\nBeyond a BMI of 40, the trend shows that charges for non-smokers tend to decrease, whereas costs for smokers display some variability.")
 
 def page3():
     # Load data
@@ -226,8 +226,7 @@ def page3():
     st.altair_chart(combined_chart.interactive(), use_container_width=True)
 
 
-    st.write("This is page 3.")
-    st.write("The analysis of medical charges across all regions reveals a consistent range of 12000 to 15000, with the Southeast region standing out for its highest average charges. Moreover, examining age versus charges illustrates a predictable trend: as age increases, so do medical expenses. This relationship is further underscored by a significant divergence between smokers and non-smokers, with smokers facing markedly higher charges, often 4 to 5 times that of non-smokers. Intriguingly, the minimum charges for smokers can match or surpass the highest charges among non-smokers. Notably, in the Southeast region, these higher charges are predominantly attributed to smokers, contributing to its status of having the highest average charges among all regions.")
+    st.write("The analysis of medical charges across all regions reveals a consistent range of 12000 to 15000, with the Southeast region standing out for its highest average charges.\n\nMoreover, examining age versus charges illustrates a predictable trend: as age increases, so do medical expenses. This relationship is further underscored by a significant divergence between smokers and non-smokers, with smokers facing markedly higher charges, often 4 to 5 times that of non-smokers.\n\nIntriguingly, the minimum charges for smokers can match or surpass the highest charges among non-smokers. Notably, in the Southeast region, these higher charges are predominantly attributed to smokers, contributing to its status of having the highest average charges among all regions.")
 
 def page4():
     # Load data
@@ -267,7 +266,6 @@ def page4():
     # Display charts using Streamlit
     st.altair_chart(combined_charts, use_container_width=True)
 
-    st.write("This is page 4.")
     st.write("Notably, healthcare charges are relatively low for the younger population but begin to rise more steeply past a certain age, suggesting higher medical costs as people grow older. Conversely, when examining the number of children in relation to Body Mass Index (BMI), there is no discernible trend, which suggests that the number of children is independent of BMI and is uniformly distributed across the different regions.")
 
 # Sidebar options
