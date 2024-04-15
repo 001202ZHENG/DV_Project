@@ -1,5 +1,4 @@
 import numpy as np
-import holoviews as hv
 import streamlit as st
 import altair as alt
 import panel as pn
