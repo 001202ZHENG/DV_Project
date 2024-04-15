@@ -5,11 +5,9 @@ import panel as pn
 import pandas as pd
 
 
-
-
 # Define page functionality
 def page1():
-    df = pd.read_csv('../insurance.csv')
+    df = pd.read_csv('insurance.csv')
     # Initialize session state variables
     if 'page_number' not in st.session_state:
         st.session_state['page_number'] = 1
@@ -121,7 +119,7 @@ def page1():
 
 def page2():
     # Load data
-    dat = pd.read_csv('../insurance.csv')
+    dat = pd.read_csv('insurance.csv')
 
     # Create selector for selecting intervals on charts
     interval = alt.selection_interval()
@@ -185,7 +183,7 @@ def page2():
 
 def page3():
     # Load data
-    data = pd.read_csv('../insurance.csv')
+    data = pd.read_csv('insurance.csv')
     # Define a dropdown selector for region filtering
     region_selection = alt.selection_single(name='RegionSelection', fields=['region'], bind='legend')
 
@@ -229,7 +227,7 @@ def page3():
 
 def page4():
     # Load data
-    data = pd.read_csv('../insurance.csv')
+    data = pd.read_csv('insurance.csv')
 
     # Create an interval selector
     interval = alt.selection_interval()
